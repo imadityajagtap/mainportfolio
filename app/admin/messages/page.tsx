@@ -142,8 +142,6 @@ export default function MessagesPage() {
       <AdminPageHeader
         title="Messages"
         subtitle="Contact form submissions"
-        actionLabel={null}
-        actionHref={null}
       />
 
       {/* Messages Table */}
