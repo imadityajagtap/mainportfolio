@@ -8,6 +8,9 @@ import AchievementsSection from '@/components/public/AchievementsSection';
 import BlogSection from '@/components/public/BlogSection';
 import ContactSection from '@/components/public/ContactSection';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 /**
  * Home Page - Portfolio Landing
  * Features Hero section with greeting, profile, CTAs, and animated doodles
