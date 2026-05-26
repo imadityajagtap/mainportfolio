@@ -32,8 +32,8 @@ const staggerContainer = {
   },
 };
 
-// Category config
-const categoryConfig = {
+// Category config with defaults
+const categoryConfig: Record<string, { icon: any; emoji: string; color: string }> = {
   Financial: {
     icon: DollarSign,
     emoji: '💰',
@@ -54,6 +54,13 @@ const categoryConfig = {
     emoji: '🤝',
     color: 'text-orange-500',
   },
+};
+
+// Default config for custom categories
+const defaultCategoryConfig = {
+  icon: Brain,
+  emoji: '⭐',
+  color: 'text-primary',
 };
 
 /**
@@ -99,7 +106,12 @@ export default function Skills() {
     groupedSkills[category].sort((a, b) => a.order - b.order);
   });
 
-  const categories = ['Financial', 'Strategy', 'Analytical', 'Soft Skills'] as const;
+  // Get all categories dynamically from grouped skills
+  // Prioritize default categories, then add custom ones
+  const defaultCategories = ['Financial', 'Strategy', 'Analytical', 'Soft Skills'];
+  const allCategories = Object.keys(groupedSkills);
+  const customCategories = allCategories.filter(cat => !defaultCategories.includes(cat));
+  const categories = [...defaultCategories.filter(cat => groupedSkills[cat]), ...customCategories];
 
   return (
     <section
@@ -153,7 +165,8 @@ export default function Skills() {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch"
             >
               {categories.map((category) => {
-                const config = categoryConfig[category];
+                // Use predefined config if available, otherwise use default
+                const config = categoryConfig[category] || defaultCategoryConfig;
                 const categorySkills = groupedSkills[category] || [];
                 const IconComponent = config.icon;
 
