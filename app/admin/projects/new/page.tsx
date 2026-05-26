@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
@@ -30,6 +30,8 @@ interface ProjectFormData {
   featured: boolean;
 }
 
+const DEFAULT_CATEGORIES = ['Strategy', 'Finance', 'Consulting', 'Research', 'Academic'];
+
 function splitCsv(value: string | string[] | undefined): string[] {
   if (Array.isArray(value)) return value.map((item) => item.trim()).filter(Boolean);
   if (!value) return [];
@@ -39,6 +41,10 @@ function splitCsv(value: string | string[] | undefined): string[] {
 export default function NewProjectPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [existingCategories, setExistingCategories] = useState<string[]>([]);
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState('');
+
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ProjectFormData>({
     defaultValues: {
       coverImage: '',
@@ -50,6 +56,29 @@ export default function NewProjectPage() {
   const title = watch('title');
   const coverImage = watch('coverImage') || '';
   const images = watch('images') || [];
+
+  // Fetch existing categories from projects
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/projects');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && Array.isArray(data.data)) {
+            // Extract unique categories
+            const categories = [...new Set(data.data.map((project: any) => project.category).filter(Boolean))];
+            // Combine default and existing categories
+            const allCategories = [...new Set([...DEFAULT_CATEGORIES, ...categories])] as string[];
+            setExistingCategories(allCategories);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        setExistingCategories(DEFAULT_CATEGORIES);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   // Auto-generate slug from title
   const generateSlug = (text: string) => {
@@ -69,8 +98,18 @@ export default function NewProjectPage() {
     setLoading(true);
 
     try {
+      // Use custom category if "Other" was selected
+      const finalCategory = showCustomCategory ? customCategory.trim() : data.category;
+
+      if (!finalCategory) {
+        alert('❌ Please enter a category');
+        setLoading(false);
+        return;
+      }
+
       const payload = {
         ...data,
+        category: finalCategory,
         problemStatement: data.problem || '',
         impactMetric: data.impact || '',
         images: splitCsv(data.images),
@@ -150,17 +189,42 @@ export default function NewProjectPage() {
                   Category <span className="text-red-500">*</span>
                 </label>
                 <select
-                  {...register('category', { required: true })}
+                  {...register('category', { required: !showCustomCategory })}
+                  onChange={(e) => {
+                    if (e.target.value === 'Other') {
+                      setShowCustomCategory(true);
+                      setValue('category', '');
+                    } else {
+                      setShowCustomCategory(false);
+                      setCustomCategory('');
+                    }
+                  }}
                   className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                 >
                   <option value="">Select category</option>
-                  <option value="Strategy">Strategy</option>
-                  <option value="Finance">Finance</option>
-                  <option value="Consulting">Consulting</option>
-                  <option value="Research">Research</option>
-                  <option value="Academic">Academic</option>
+                  {existingCategories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                  <option value="Other">Other</option>
                 </select>
-                {errors.category && <p className="text-red-500 text-xs mt-1">Category is required</p>}
+                {errors.category && !showCustomCategory && <p className="text-red-500 text-xs mt-1">Category is required</p>}
+
+                {/* Show custom input when "Other" is selected */}
+                {showCustomCategory && (
+                  <div className="mt-3">
+                    <input
+                      type="text"
+                      value={customCategory}
+                      onChange={(e) => setCustomCategory(e.target.value)}
+                      placeholder="Enter custom category name"
+                      className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      autoFocus
+                    />
+                    {!customCategory.trim() && (
+                      <p className="text-red-500 text-xs mt-1">Please enter a category name</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               <AdminFormField

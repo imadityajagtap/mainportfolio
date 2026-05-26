@@ -23,6 +23,8 @@ interface BlogFormData {
   featured: boolean;
 }
 
+const DEFAULT_CATEGORIES = ['Finance', 'Strategy', 'Consulting', 'Markets', 'Frameworks', 'Personal'];
+
 export default function EditBlogPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
@@ -31,6 +33,10 @@ export default function EditBlogPage({ params }: { params: Promise<{ slug: strin
   const [deleteModal, setDeleteModal] = useState(false);
   const [postTitle, setPostTitle] = useState('');
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [existingCategories, setExistingCategories] = useState<string[]>([]);
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState('');
+  const [currentCategory, setCurrentCategory] = useState('');
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<BlogFormData>();
 
@@ -39,7 +45,25 @@ export default function EditBlogPage({ params }: { params: Promise<{ slug: strin
 
   useEffect(() => {
     fetchPost();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/blog');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && Array.isArray(data.data)) {
+          const categories = [...new Set(data.data.map((post: any) => post.category).filter(Boolean))];
+          const allCategories = [...new Set([...DEFAULT_CATEGORIES, ...categories])] as string[];
+          setExistingCategories(allCategories);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      setExistingCategories(DEFAULT_CATEGORIES);
+    }
+  };
 
   const fetchPost = async () => {
     try {
@@ -51,6 +75,7 @@ export default function EditBlogPage({ params }: { params: Promise<{ slug: strin
         if (post) {
           setPostTitle(post.title || '');
           setUpdatedAt(post.updatedAt || null);
+          setCurrentCategory(post.category || '');
 
           setValue('title', post.title || '');
           setValue('slug', post.slug || '');
@@ -85,8 +110,18 @@ export default function EditBlogPage({ params }: { params: Promise<{ slug: strin
     setSaving(true);
 
     try {
+      // Use custom category if "Other" was selected
+      const finalCategory = showCustomCategory ? customCategory.trim() : data.category;
+
+      if (!finalCategory) {
+        alert('❌ Please enter a category');
+        setSaving(false);
+        return;
+      }
+
       const payload = {
         ...data,
+        category: finalCategory,
         tags: typeof data.tags === 'string'
           ? data.tags.split(',').map(t => t.trim()).filter(Boolean)
           : (Array.isArray(data.tags) ? data.tags : []),
@@ -260,18 +295,42 @@ export default function EditBlogPage({ params }: { params: Promise<{ slug: strin
                   Category <span className="text-red-500">*</span>
                 </label>
                 <select
-                  {...register('category', { required: true })}
+                  {...register('category', { required: !showCustomCategory })}
+                  onChange={(e) => {
+                    if (e.target.value === 'Other') {
+                      setShowCustomCategory(true);
+                      setValue('category', '');
+                    } else {
+                      setShowCustomCategory(false);
+                      setCustomCategory('');
+                    }
+                  }}
                   className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                 >
                   <option value="">Select category</option>
-                  <option value="Finance">Finance</option>
-                  <option value="Strategy">Strategy</option>
-                  <option value="Consulting">Consulting</option>
-                  <option value="Markets">Markets</option>
-                  <option value="Frameworks">Frameworks</option>
-                  <option value="Personal">Personal</option>
+                  {existingCategories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                  <option value="Other">Other</option>
                 </select>
-                {errors.category && <p className="text-red-500 text-xs mt-1">Category is required</p>}
+                {errors.category && !showCustomCategory && <p className="text-red-500 text-xs mt-1">Category is required</p>}
+
+                {/* Show custom input when "Other" is selected */}
+                {showCustomCategory && (
+                  <div className="mt-3">
+                    <input
+                      type="text"
+                      value={customCategory}
+                      onChange={(e) => setCustomCategory(e.target.value)}
+                      placeholder="Enter custom category name"
+                      className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      autoFocus
+                    />
+                    {!customCategory.trim() && (
+                      <p className="text-red-500 text-xs mt-1">Please enter a category name</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               <AdminFormField
