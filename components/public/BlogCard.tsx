@@ -14,7 +14,8 @@ interface BlogCardProps {
     coverImage?: string;
     category?: string;
     tags?: string[];
-    publishedDate: string;
+    publishedDate?: string;
+    publishDate?: string;
     readTime?: number;
   };
   index: number;
@@ -39,7 +40,7 @@ function formatPostDate(dateString?: string | null): string {
 }
 
 export default function BlogCard({ post, index }: BlogCardProps) {
-  const postDate = formatPostDate(post.publishedDate);
+  const postDate = formatPostDate(post.publishedDate || post.publishDate);
 
   return (
     <Link href={`/blog/${post.slug || ''}`}>

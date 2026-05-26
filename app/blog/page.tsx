@@ -4,26 +4,12 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import BlogCard from '@/components/public/BlogCard';
+import { IBlogPost } from '@/types';
 
-interface BlogPost {
-  _id: string;
-  title: string;
-  slug: string;
-  excerpt?: string;
-  content?: string;
-  coverImage?: string;
-  category?: string;
-  tags?: string[];
-  author?: string;
-  publishedDate: string;
-  readTime?: number;
-  published?: boolean;
-}
-
-const CATEGORIES = ['All', 'Finance', 'Strategy', 'Consulting', 'Markets', 'Personal'];
+const CATEGORIES = ['All', 'Market Analysis', 'Strategy', 'Book Review', 'Career Tips'];
 
 export default function BlogPage() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [posts, setPosts] = useState<IBlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
