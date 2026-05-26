@@ -51,7 +51,7 @@ export interface IAbout {
 
 export interface ISkill {
   _id: string;
-  category: 'Financial' | 'Strategy' | 'Analytical' | 'Soft Skills';
+  category: string; // Allow any custom category
   name: string;
   icon: string;
   proficiency: number;

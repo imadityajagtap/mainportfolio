@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
@@ -15,10 +15,16 @@ interface SkillFormData {
   order: string;
 }
 
+const DEFAULT_CATEGORIES = ['Financial', 'Strategy', 'Analytical', 'Soft Skills'];
+
 export default function NewSkillPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm<SkillFormData>({
+  const [existingCategories, setExistingCategories] = useState<string[]>([]);
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState('');
+
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm<SkillFormData>({
     defaultValues: {
       icon: 'Star',
       proficiency: '3',
@@ -26,12 +32,45 @@ export default function NewSkillPage() {
     },
   });
 
+  // Fetch existing categories from skills
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/skills');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && Array.isArray(data.data)) {
+            // Extract unique categories
+            const categories = [...new Set(data.data.map((skill: any) => skill.category).filter(Boolean))];
+            // Combine default and existing categories
+            const allCategories = [...new Set([...DEFAULT_CATEGORIES, ...categories])] as string[];
+            setExistingCategories(allCategories);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        setExistingCategories(DEFAULT_CATEGORIES);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const onSubmit = async (data: SkillFormData) => {
     setLoading(true);
 
     try {
+      // Use custom category if "Add New" was selected
+      const finalCategory = showCustomCategory ? customCategory.trim() : data.category;
+
+      if (!finalCategory) {
+        alert('❌ Please enter a category');
+        setLoading(false);
+        return;
+      }
+
       const payload = {
         ...data,
+        category: finalCategory,
         proficiency: data.proficiency ? parseInt(data.proficiency) : 3,
         order: data.order ? parseInt(data.order) : 0,
       };
@@ -89,17 +128,52 @@ export default function NewSkillPage() {
             <label className="text-sm font-medium text-foreground mb-2 block">
               Category <span className="text-red-500">*</span>
             </label>
-            <select
-              {...register('category', { required: true })}
-              className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-            >
-              <option value="">Select category</option>
-              <option value="Financial">Financial</option>
-              <option value="Strategy">Strategy</option>
-              <option value="Analytical">Analytical</option>
-              <option value="Soft Skills">Soft Skills</option>
-            </select>
-            {errors.category && <p className="text-red-500 text-xs mt-1">Category is required</p>}
+
+            {!showCustomCategory ? (
+              <div className="space-y-2">
+                <select
+                  {...register('category', { required: !showCustomCategory })}
+                  onChange={(e) => {
+                    if (e.target.value === '__ADD_NEW__') {
+                      setShowCustomCategory(true);
+                      setValue('category', '');
+                    }
+                  }}
+                  className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                >
+                  <option value="">Select category</option>
+                  {existingCategories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                  <option value="__ADD_NEW__">➕ Add New Category</option>
+                </select>
+                {errors.category && <p className="text-red-500 text-xs mt-1">Category is required</p>}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  placeholder="Enter new category name (e.g., Technical, Design, Marketing)"
+                  className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCustomCategory(false);
+                    setCustomCategory('');
+                  }}
+                  className="text-sm text-foreground/60 hover:text-primary transition-colors"
+                >
+                  ← Back to existing categories
+                </button>
+                {!customCategory.trim() && (
+                  <p className="text-red-500 text-xs">Please enter a category name</p>
+                )}
+              </div>
+            )}
           </div>
 
           <AdminFormField

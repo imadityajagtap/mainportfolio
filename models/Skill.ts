@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ISkill extends Document {
-  category: 'Financial' | 'Strategy' | 'Analytical' | 'Soft Skills';
+  category: string;
   name: string;
   icon: string;
   proficiency: number;
@@ -15,10 +15,8 @@ const SkillSchema = new Schema<ISkill>(
     category: {
       type: String,
       required: [true, 'Category is required'],
-      enum: {
-        values: ['Financial', 'Strategy', 'Analytical', 'Soft Skills'],
-        message: '{VALUE} is not a valid category',
-      },
+      trim: true,
+      // Removed enum restriction to allow custom categories
     },
     name: {
       type: String,
