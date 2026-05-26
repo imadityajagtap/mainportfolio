@@ -14,21 +14,23 @@ interface PageProps {
 }
 
 /**
- * Fetch project data from API
+ * Fetch project data from API - directly from database for SSG
  */
 async function getProject(slug: string): Promise<IProject | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/projects/${slug}`, {
-      next: { revalidate: 3600 }, // Revalidate every hour
-    });
+    // Import directly for server-side rendering to avoid fetch issues
+    const connectDB = (await import('@/lib/mongodb')).default;
+    const Project = (await import('@/models/Project')).default;
 
-    if (!res.ok) {
+    await connectDB();
+    const project = await Project.findOne({ slug }).lean();
+
+    if (!project) {
       return null;
     }
 
-    const data = await res.json();
-    return data.success ? data.data : null;
+    // Convert MongoDB document to plain object
+    return JSON.parse(JSON.stringify(project));
   } catch (error) {
     console.error('Error fetching project:', error);
     return null;

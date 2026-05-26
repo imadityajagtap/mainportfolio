@@ -27,21 +27,30 @@ interface PageProps {
 }
 
 /**
- * Fetch blog post by slug
+ * Fetch blog post by slug - directly from database for SSG
  */
 async function getBlogPost(slug: string): Promise<BlogPost | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/blog/${slug}`, {
-      next: { revalidate: 3600 }, // Revalidate every hour
-    });
+    // Import directly for server-side rendering to avoid fetch issues
+    const connectDB = (await import('@/lib/mongodb')).default;
+    const BlogPost = (await import('@/models/BlogPost')).default;
 
-    if (!res.ok) {
+    await connectDB();
+    const post = await BlogPost.findOne({ slug }).lean();
+
+    if (!post) {
       return null;
     }
 
-    const data = await res.json();
-    return data.success ? data.data : null;
+    // Convert MongoDB document to plain object and map field names
+    const plainPost = JSON.parse(JSON.stringify(post));
+
+    // Map publishDate to publishedDate for compatibility
+    if (plainPost.publishDate && !plainPost.publishedDate) {
+      plainPost.publishedDate = plainPost.publishDate;
+    }
+
+    return plainPost;
   } catch (error) {
     console.error('Error fetching blog post:', error);
     return null;
