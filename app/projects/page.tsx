@@ -6,6 +6,7 @@ import { Search } from 'lucide-react';
 import ProjectCard from '@/components/public/ProjectCard';
 import { IProject } from '@/types';
 
+// Project categories matching the database schema
 const CATEGORIES = ['All', 'Strategy', 'Finance', 'Consulting', 'Research', 'Academic'];
 
 export default function ProjectsPage() {
