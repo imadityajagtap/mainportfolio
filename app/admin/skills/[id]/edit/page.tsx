@@ -204,48 +204,40 @@ export default function EditSkillPage({ params }: { params: Promise<{ id: string
               Category <span className="text-red-500">*</span>
             </label>
 
-            {!showCustomCategory ? (
-              <div className="space-y-2">
-                <select
-                  {...register('category', { required: !showCustomCategory })}
-                  onChange={(e) => {
-                    if (e.target.value === '__ADD_NEW__') {
-                      setShowCustomCategory(true);
-                      setValue('category', '');
-                    }
-                  }}
-                  className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                >
-                  <option value="">Select category</option>
-                  {existingCategories.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                  <option value="__ADD_NEW__">➕ Add New Category</option>
-                </select>
-                {errors.category && <p className="text-red-500 text-xs mt-1">Category is required</p>}
-              </div>
-            ) : (
-              <div className="space-y-2">
+            <select
+              {...register('category', { required: !showCustomCategory })}
+              onChange={(e) => {
+                if (e.target.value === 'Other') {
+                  setShowCustomCategory(true);
+                  setValue('category', '');
+                } else {
+                  setShowCustomCategory(false);
+                  setCustomCategory('');
+                }
+              }}
+              className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+            >
+              <option value="">Select category</option>
+              {existingCategories.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+              <option value="Other">Other (Type custom category)</option>
+            </select>
+            {errors.category && !showCustomCategory && <p className="text-red-500 text-xs mt-1">Category is required</p>}
+
+            {/* Show custom input when "Other" is selected */}
+            {showCustomCategory && (
+              <div className="mt-3">
                 <input
                   type="text"
                   value={customCategory}
                   onChange={(e) => setCustomCategory(e.target.value)}
-                  placeholder="Enter new category name (e.g., Technical, Design, Marketing)"
+                  placeholder="Enter custom category name (e.g., Technical, Design, Marketing)"
                   className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   autoFocus
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCustomCategory(false);
-                    setCustomCategory('');
-                  }}
-                  className="text-sm text-foreground/60 hover:text-primary transition-colors"
-                >
-                  ← Back to existing categories
-                </button>
                 {!customCategory.trim() && (
-                  <p className="text-red-500 text-xs">Please enter a category name</p>
+                  <p className="text-red-500 text-xs mt-1">Please enter a category name</p>
                 )}
               </div>
             )}
