@@ -4,27 +4,12 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import ProjectCard from '@/components/public/ProjectCard';
+import { IProject } from '@/types';
 
-interface Project {
-  _id: string;
-  title: string;
-  slug: string;
-  description?: string;
-  detailedDescription?: string;
-  coverImage?: string;
-  technologies?: string[];
-  category?: string;
-  featured?: boolean;
-  githubUrl?: string;
-  liveUrl?: string;
-  publishedDate: string;
-  published?: boolean;
-}
-
-const CATEGORIES = ['All', 'Web Development', 'Mobile App', 'Data Science', 'AI/ML', 'Consulting', 'Other'];
+const CATEGORIES = ['All', 'Strategy', 'Finance', 'Consulting', 'Research', 'Academic'];
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<IProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,12 +17,18 @@ export default function ProjectsPage() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch('/api/projects?published=true&sort=-publishedDate');
+        const response = await fetch('/api/projects', { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to fetch projects');
 
         const data = await response.json();
         if (data.success && Array.isArray(data.data)) {
-          setProjects(data.data || []);
+          // Sort: featured first, then by createdAt desc
+          const sorted = [...data.data].sort((a, b) => {
+            if (a.featured && !b.featured) return -1;
+            if (!a.featured && b.featured) return 1;
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          });
+          setProjects(sorted);
         } else {
           setProjects([]);
         }
@@ -56,14 +47,14 @@ export default function ProjectsPage() {
   const filteredProjects = projects.filter((project) => {
     const matchesCategory =
       activeCategory === 'All' ||
-      project.category?.toLowerCase() === activeCategory.toLowerCase();
+      project.category === activeCategory;
 
     const matchesSearch =
       !searchQuery ||
       project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.technologies?.some((tech) =>
-        tech.toLowerCase().includes(searchQuery.toLowerCase())
+      project.hook?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.tags?.some((tag) =>
+        tag.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
     return matchesCategory && matchesSearch;
