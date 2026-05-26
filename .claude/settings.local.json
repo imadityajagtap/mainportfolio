@@ -45,7 +45,30 @@
       "Bash(grep *)",
       "Read(//c/Users/AdityaVikasJagtap/Desktop/**)",
       "Bash(mkdir -p mainportfolio-temp)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(npx *)",
+      "Bash(cp -r ../Aditya_Portfolio/app/admin ./app)",
+      "Bash(cp -r ../Aditya_Portfolio/app/api ./app/)",
+      "Bash(cp -r ../Aditya_Portfolio/components ./components)",
+      "Bash(cp -r ../Aditya_Portfolio/lib ./lib)",
+      "Bash(cp -r ../Aditya_Portfolio/models ./models)",
+      "Bash(cp ../Aditya_Portfolio/package.json .)",
+      "Bash(cp ../Aditya_Portfolio/tsconfig.json .)",
+      "Bash(cp ../Aditya_Portfolio/next.config.ts .)",
+      "Bash(cp ../Aditya_Portfolio/tailwind.config.ts .)",
+      "Bash(cp ../Aditya_Portfolio/components.json .)",
+      "Bash(cp ../Aditya_Portfolio/.env.example .)",
+      "Bash(cp ../Aditya_Portfolio/.gitignore .)",
+      "Bash(cp ../Aditya_Portfolio/app/globals.css ./app/)",
+      "Bash(gh repo *)",
+      "Bash(git fetch *)",
+      "Bash(curl -s http://localhost:3000/api/projects)",
+      "Bash(curl -s http://localhost:3000/api/projects/ev-market-entry-strategy)",
+      "Bash(curl -s http://localhost:3000/admin/skills/new)"
     ]
   }
 }

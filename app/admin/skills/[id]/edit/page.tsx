@@ -221,7 +221,7 @@ export default function EditSkillPage({ params }: { params: Promise<{ id: string
               {existingCategories.map((cat) => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
-              <option value="Other">Other (Type custom category)</option>
+              <option value="Other">Other</option>
             </select>
             {errors.category && !showCustomCategory && <p className="text-red-500 text-xs mt-1">Category is required</p>}
 
@@ -232,7 +232,7 @@ export default function EditSkillPage({ params }: { params: Promise<{ id: string
                   type="text"
                   value={customCategory}
                   onChange={(e) => setCustomCategory(e.target.value)}
-                  placeholder="Enter custom category name (e.g., Technical, Design, Marketing)"
+                  placeholder="Enter custom category name"
                   className="w-full px-4 py-3 bg-background border border-foreground/20 rounded-xl focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   autoFocus
                 />
