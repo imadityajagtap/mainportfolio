@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FolderOpen } from "lucide-react";
+import Link from "next/link";
 import { IProject } from "@/types";
 import ProjectCard from "./ProjectCard";
 import ProjectFilters from "./ProjectFilters";
@@ -55,24 +56,43 @@ export default function Projects() {
     <section id="projects" className="py-20 lg:py-28 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <span className="text-sm font-mono uppercase tracking-widest text-muted-foreground">
-            04 / SELECTED WORK
-          </span>
-          <h2 className="font-serif text-5xl md:text-6xl lg:text-7xl font-black mt-4 leading-tight">
-            Projects that tell a{" "}
-            <em className="text-secondary italic">story</em>
-          </h2>
-          <p className="text-lg text-muted-foreground mt-6">
-            Real problems. Real analysis. Real impact.
-          </p>
-        </motion.div>
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="text-center md:text-left"
+          >
+            <span className="text-sm font-mono uppercase tracking-widest text-muted-foreground">
+              04 / SELECTED WORK
+            </span>
+            <h2 className="font-serif text-5xl md:text-6xl lg:text-7xl font-black mt-4 leading-tight">
+              Projects that tell a{" "}
+              <em className="text-secondary italic">story</em>
+            </h2>
+            <p className="text-lg text-muted-foreground mt-6">
+              Real problems. Real analysis. Real impact.
+            </p>
+          </motion.div>
+
+          {/* View all link - desktop */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true }}
+            className="hidden md:block"
+          >
+            <Link
+              href="/projects"
+              className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors group"
+            >
+              View all projects
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
+          </motion.div>
+        </div>
 
         {/* Filters */}
         <motion.div
@@ -130,6 +150,25 @@ export default function Projects() {
             >
               View All Projects
             </button>
+          </motion.div>
+        )}
+
+        {/* View all link - mobile */}
+        {!loading && filteredProjects.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="md:hidden text-center mt-12"
+          >
+            <Link
+              href="/projects"
+              className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors group"
+            >
+              View all projects
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
           </motion.div>
         )}
       </div>
